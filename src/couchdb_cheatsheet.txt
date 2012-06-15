@@ -1,0 +1,133 @@
+CouchDB CheatSheet
+===================
+
+Ping
+------
+curl http://127.0.0.1:5984/
+{"couchdb":"Welcome","version":"1.0.0"}
+
+
+Get all databases
+-------------------
+curl -X GET http://127.0.0.1:5984/_all_dbs
+["_users"]
+
+
+Create a database
+------------------
+curl -X PUT http://127.0.0.1:5984/albums
+{"ok":true}
+
+
+CONFLICT: tried to create an existing database
+------------------------------------------------
+curl -X PUT http://127.0.0.1:5984/albums
+{"error":"file_exists","reason":"The database could not be created, the file already exists."}
+
+
+Delete a database
+-------------------
+curl -X DELETE http://127.0.0.1:5984/albums
+{"ok":true}
+
+
+View Futon (web admin)
+------------------------
+http://127.0.0.1:5984/_utils/
+
+
+Create a document
+-----------------
+curl -X PUT http://127.0.0.1:5984/albums/2 -d '{"title":"Revolver", "artist":"The Beatles"}'
+{"ok":true,"id":"2","rev":"1-5e963faf3d25914faecaf772455b0aac"}
+
+
+Create a document from a file
+-----------------
+curl -X PUT http://127.0.0.1:5984/albums/3 -d @abbeyRoad.json
+
+{"ok":true,"id":"3","rev":"3-a94e7594c59864efcb3a7d4afe4aad4f"}
+
+
+
+Get all documents in a database (id only)
+-----------------
+curl -X GET http://127.0.0.1:5984/albums/_all_docs
+
+
+Get all documents in a database (full doc)
+-----------------
+curl -X GET http://127.0.0.1:5984/albums/_all_docs?include_docs=true
+
+
+
+
+
+Get a UUID
+-------------
+curl -X GET http://127.0.0.1:5984/_uuids
+{"uuids":["1e1b132da27ff00f8860f47df60013ad"]}
+
+
+Get multiple UUIDs
+--------------------
+curl -X GET http://127.0.0.1:5984/_uuids?count=3
+{"uuids":["1e1b132da27ff00f8860f47df600205a","1e1b132da27ff00f8860f47df60027e4","1e1b132da27ff00f8860f47df60033c3"]}
+
+
+
+Retrieve a document
+---------------------
+curl -X GET http://127.0.0.1:5984/albums/2 
+{"_id":"2","_rev":"1-5e963faf3d25914faecaf772455b0aac","title":"Revolver","artist":"The Beatles"}
+
+
+Update a document
+------------------
+NOTE: you must know both the id and the rev
+curl -X UPDATE http://127.0.0.1:5984/albums/2?rev=1-5e963faf3d25914faecaf772455b0aac
+
+
+
+
+Delete a document
+------------------
+NOTE: you must know both the id and the rev
+curl -X DELETE http://127.0.0.1:5984/albums/2?rev=1-5e963faf3d25914faecaf772455b0aac
+{"ok":true,"id":"2","rev":"1-5e963faf3d25914faecaf772455b0aac"}
+
+
+
+=========================
+Map / Reduce
+=========================
+Map:
+function(doc) {
+if ('artist' in doc) {
+    emit(doc.artist, doc._id);
+  }
+}
+
+Save as --> artist (design doc), by_name
+Try it:
+http://localhost:5984/albums/_design/artist/_view/by_name?key="Grateful Dead"
+
+Limit the results:
+http://localhost:5984/albums/_design/artist/_view/by_name?key="The Beatles"&limit=1
+
+Return a range (names between F and M):
+http://localhost:5984/albums/_design/artist/_view/by_name?startkey="F"&endkey="M"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
